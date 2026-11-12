@@ -187,8 +187,8 @@ button.link:hover { color: var(--critical); background: none; }
         <span class="label-sm">to</span><input type="date" class="to" aria-label="To date">
       </div>
     </div>
-    <div class="filters2"><span class="label-sm">Partner</span><div class="chips" id="partner-chips"></div></div>
     <div class="filters2">
+      <span class="label-sm">Partner</span><select id="f-partner" aria-label="Partner"></select>
       <span class="label-sm">Change</span><div class="chips" id="kind-chips"></div>
       <select id="f-type" aria-label="Seller type"></select>
       <input type="search" id="f-q" placeholder="Search name, domain or seller ID">
@@ -465,9 +465,9 @@ button.link:hover { color: var(--critical); background: none; }
     $("changes-sub").textContent = rangeText();
     const base = D.rangeChanges;
     // partner chips
-    $("partner-chips").innerHTML =
-      `<button class="chip" data-partner="" aria-pressed="${!state.partner}">All partners <span class="n">${fmt(base.length)}</span></button>` +
-      D.partners.map(x => `<button class="chip" data-partner="${esc(x)}" aria-pressed="${state.partner === x}">${esc(x)} <span class="n">${fmt(D.counts[x].total)}</span></button>`).join("");
+    $("f-partner").innerHTML =
+      `<option value="">All partners (${fmt(base.length)})</option>` +
+      D.partners.map(x => `<option value="${esc(x)}" ${state.partner === x ? "selected" : ""}>${esc(x)} (${fmt(D.counts[x].total)})</option>`).join("");
     const byPartner = base.filter(c => !state.partner || c.exchange === state.partner);
     // kind chips
     $("kind-chips").innerHTML =
@@ -504,7 +504,7 @@ button.link:hover { color: var(--critical); background: none; }
     }
     $("changes").innerHTML = html;
   }
-  $("partner-chips").addEventListener("click", e => { const b = e.target.closest("[data-partner]"); if (b) { state.partner = b.dataset.partner; render(); } });
+  $("f-partner").addEventListener("change", e => { state.partner = e.target.value; render(); });
   $("kind-chips").addEventListener("click", e => { const b = e.target.closest("[data-kind]"); if (b) { state.kind = b.dataset.kind; render(); } });
   $("f-type").addEventListener("change", e => { state.type = e.target.value; render(); });
   $("f-q").addEventListener("input", e => { state.q = e.target.value.trim(); render(); });
