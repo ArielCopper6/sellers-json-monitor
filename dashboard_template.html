@@ -346,6 +346,7 @@ dialog .row { justify-content: flex-end; gap: 8px; }
   const today = iso(new Date());
   const daysAgo = n => { const d = new Date(); d.setDate(d.getDate() - n); return iso(d); };
   const PRESETS = [
+    { id: "today", label: "Today", from: () => today, to: () => today },
     { id: "yesterday", label: "Yesterday", from: () => daysAgo(1), to: () => daysAgo(1) },
     { id: "7", label: "Last 7 days", from: () => daysAgo(6) },
     { id: "30", label: "Last 30 days", from: () => daysAgo(29) },
