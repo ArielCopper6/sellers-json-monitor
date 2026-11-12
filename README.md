@@ -1,28 +1,29 @@
 # sellers.json monitor
 
-Every morning at 08:00 this checks `https://<website>/sellers.json` for every website in
-`domains.txt`, compares it with the last check, and records which sellers are
-**new**, **removed** or **changed**.
+**Dashboard (share this link with your team):** https://arielcopper6.github.io/sellers-json-monitor/
 
-## See the results
-- **Dashboard:** open **http://localhost:8765** in your web browser (bookmark it).
-  - Add or remove partners, or click "Check all partners now".
-  - Pick a timeframe (last 7 / 30 / 90 days, all time, or your own dates).
-  - See changes grouped by partner; filter by change, seller type, or search a name.
-  - "Download CSV" exports what you see.
-  - `dashboard.html` is a read-only copy you can double-click if the address above doesn't open.
-- **Email:** a daily summary, once your Google App Password is in `config.env`
-  (until then the email is skipped and everything else still works).
+Every morning (08:00 Israel time in winter, 09:00 in summer) GitHub checks
+`https://<partner>/sellers.json` for every partner in `domains.txt`, compares it with the
+previous check, and records which sellers are **new**, **removed** or **changed**.
+It runs on GitHub, so your Mac can be off.
 
-## Common tasks
-- Add a partner: use the box on the dashboard (or add a line to `domains.txt`).
-- Run a check now: `python3 sellers_monitor.py`
-- Change the time: `./install_schedule.sh 9 30` (09:30). Stop everything: `./install_schedule.sh --uninstall`
-- Dashboard not opening? Run `./install_schedule.sh` again; see `dashboard.log`.
-- If something looks wrong, open `monitor.log`.
+## Using the dashboard
+- Timeframe: Yesterday, last 7 / 30 / 90 days, all time, or your own dates.
+- Changes are grouped by partner; filter by change type, seller type, or search a name.
+- "Download CSV" exports what you see.
 
-The Mac must be on; if it was asleep at 08:00, the check runs when it wakes.
+## Adding or removing a partner
+Type it in the "Add partner" box (or click "Remove" on a row). A GitHub page opens:
+click **Submit new issue**. About 2 minutes later the dashboard is updated and GitHub
+replies on that page. Only people added to the project on GitHub can change the list
+(Settings → Collaborators on github.com/ArielCopper6/sellers-json-monitor).
+
+## Check now
+Click "Check now (on GitHub)" on the dashboard, then **Run workflow**.
 
 ## Files
-`changes.jsonl` and `runs.jsonl` hold the full history the dashboard is built from.
-`state/` is the last list per website, `history/` keeps each day's raw file, `reports/` each day's email.
+- `domains.txt` the partner list
+- `changes.jsonl`, `runs.jsonl` full history the dashboard is built from
+- `state/` the last seller list per partner
+- `.github/workflows/update.yml` the daily job
+- `server.py`, `install_schedule.sh` optional Mac-only version (not running)
