@@ -141,10 +141,10 @@ button.link:hover { color: var(--critical); background: none; }
   <section class="card">
     <div class="timebar">
       <b>Timeframe</b>
-      <div class="chips" id="presets"></div>
+      <div class="chips presets"></div>
       <div class="dates">
-        <span class="label-sm">From</span><input type="date" id="from" aria-label="From date">
-        <span class="label-sm">to</span><input type="date" id="to" aria-label="To date">
+        <span class="label-sm">From</span><input type="date" class="from" aria-label="From date">
+        <span class="label-sm">to</span><input type="date" class="to" aria-label="To date">
       </div>
     </div>
     <div class="sub" style="margin-top:8px">Each change is dated by the day the check found it.</div>
@@ -181,6 +181,12 @@ button.link:hover { color: var(--critical); background: none; }
   <section class="card" id="changes-card">
     <h2>Changes by partner</h2>
     <div class="sub" id="changes-sub"></div>
+    <div class="filters2"><span class="label-sm">Timeframe</span><div class="chips presets"></div>
+      <div class="dates">
+        <span class="label-sm">From</span><input type="date" class="from" aria-label="From date">
+        <span class="label-sm">to</span><input type="date" class="to" aria-label="To date">
+      </div>
+    </div>
     <div class="filters2"><span class="label-sm">Partner</span><div class="chips" id="partner-chips"></div></div>
     <div class="filters2">
       <span class="label-sm">Change</span><div class="chips" id="kind-chips"></div>
@@ -243,19 +249,23 @@ button.link:hover { color: var(--critical); background: none; }
   const state = { preset: "30", from: daysAgo(29), to: today, partner: "", kind: "", type: "", q: "" };
 
   // ---------- timeframe ----------
+  // the same timeframe controls appear at the top and above the changes table; they stay in sync
+  const all = sel => [...document.querySelectorAll(sel)];
   function renderPresets() {
-    $("presets").innerHTML = PRESETS.map(p =>
-      `<button class="chip" data-p="${p.id}" aria-pressed="${state.preset === p.id}">${p.label}</button>`).join("");
-    $("from").value = state.from; $("to").value = state.to;
+    all(".presets").forEach(el => el.innerHTML = PRESETS.map(p =>
+      `<button class="chip" data-p="${p.id}" aria-pressed="${state.preset === p.id}">${p.label}</button>`).join(""));
+    all("input.from").forEach(el => el.value = state.from);
+    all("input.to").forEach(el => el.value = state.to);
   }
-  $("presets").addEventListener("click", e => {
+  all(".presets").forEach(el => el.addEventListener("click", e => {
     const b = e.target.closest("[data-p]"); if (!b) return;
     const p = PRESETS.find(x => x.id === b.dataset.p);
     state.preset = p.id; state.from = p.from(); state.to = p.to ? p.to() : today;
     render();
-  });
-  ["from", "to"].forEach(id => $(id).addEventListener("change", () => {
-    state.from = $("from").value; state.to = $("to").value; state.preset = "";
+  }));
+  all(".dates").forEach(box => box.addEventListener("change", e => {
+    if (!e.target.matches("input[type=date]")) return;
+    state.from = box.querySelector(".from").value; state.to = box.querySelector(".to").value; state.preset = "";
     if (state.from && state.to && state.from > state.to) [state.from, state.to] = [state.to, state.from];
     render();
   }));
