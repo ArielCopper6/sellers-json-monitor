@@ -116,6 +116,14 @@ button.link:hover { color: var(--critical); background: none; }
 .filters2 input[type=search] { flex: 1 1 220px; max-width: 320px; }
 .filters2 .spacer { flex: 1; }
 .label-sm { font-size: 12px; color: var(--text-secondary); margin-right: 2px; }
+dialog { border: 1px solid var(--border); border-radius: 12px; background: var(--surface-1); color: var(--text-primary);
+  padding: 20px; width: min(520px, calc(100vw - 32px)); }
+dialog::backdrop { background: rgba(0,0,0,.35); }
+dialog h2 { margin: 0 0 8px; }
+dialog ol { padding-left: 20px; font-size: 14px; line-height: 1.6; }
+dialog input { width: 100%; box-sizing: border-box; margin: 4px 0 8px; }
+dialog .row { justify-content: flex-end; gap: 8px; }
+#forget-key { font-size: 12px; }
 @media (max-width: 600px) { .tile .value { font-size: 24px; } }
 </style>
 </head>
@@ -129,8 +137,25 @@ button.link:hover { color: var(--critical); background: none; }
     <div class="row">
       <span class="sub" id="generated"></span>
       <button id="check-now" class="server-only">Check all partners now</button>
+      <button id="forget-key" class="link" hidden title="Remove the GitHub key saved in this browser">Disconnect</button>
     </div>
   </header>
+
+  <dialog id="key-dialog">
+    <form method="dialog" id="key-form">
+      <h2>Connect your GitHub account (one time)</h2>
+      <div class="sub">So the dashboard knows it's you, it needs a GitHub key. You do this once per browser.</div>
+      <ol>
+        <li><a id="key-link" target="_blank" rel="noopener">Open this GitHub page</a> (sign in if asked).</li>
+        <li>Pick an <b>Expiration</b> (for example 90 days), scroll down and click <b>Generate token</b>.</li>
+        <li>Copy the key (it starts with <code>ghp_</code>) and paste it here:</li>
+      </ol>
+      <input id="key-input" type="password" placeholder="ghp_…" autocomplete="off" aria-label="GitHub key">
+      <div class="msg" id="key-msg"></div>
+      <div class="sub" style="margin-bottom:12px">The key is saved only in this browser. Click “Disconnect” at the top to remove it.</div>
+      <div class="row"><button value="cancel" formnovalidate>Cancel</button><button class="primary" id="key-save" value="save">Connect</button></div>
+    </form>
+  </dialog>
 
   <div class="notice" id="static-note" hidden>
     This is a read-only copy. To add partners or check now, open
@@ -233,8 +258,89 @@ button.link:hover { color: var(--critical); background: none; }
   const canManage = live || !!repo;
   document.querySelectorAll(".server-only").forEach(el => el.hidden = !canManage);
   $("static-note").hidden = canManage;
-  const ghIssue = (title, body) => window.open(`https://github.com/${repo}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`, "_blank", "noopener");
-  if (repo) $("check-now").textContent = "Check now (on GitHub)";
+  if (repo) $("check-now").textContent = "Check now";
+
+  // ---------- GitHub key (team page only) ----------
+  // A personal GitHub key, kept only in this browser, lets the buttons act on GitHub directly.
+  const KEY = "sellers-json-github-key";
+  const getKey = () => { try { return localStorage.getItem(KEY) || ""; } catch { return ""; } };
+  const setKey = v => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch {} ; $("forget-key").hidden = !v; };
+  if (repo) $("forget-key").hidden = !getKey();
+  $("forget-key").addEventListener("click", () => { setKey(""); alert("Disconnected. The GitHub key was removed from this browser."); });
+
+  async function gh(method, path, body, key = getKey()) {
+    const r = await fetch("https://api.github.com" + path, {
+      method, body: body ? JSON.stringify(body) : undefined,
+      headers: { Authorization: "Bearer " + key, Accept: "application/vnd.github+json" },
+    });
+    if (r.status === 401) { setKey(""); throw new Error("Your GitHub key has expired or was deleted. Click the button again to connect a new one."); }
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).message || `GitHub error ${r.status}`);
+    return r.status === 204 ? {} : r.json();
+  }
+
+  // returns true once a working key is saved
+  function connect() {
+    if (getKey()) return Promise.resolve(true);
+    const dlg = $("key-dialog"), input = $("key-input"), msg = $("key-msg");
+    $("key-link").href = "https://github.com/settings/tokens/new?scopes=repo&description=" + encodeURIComponent("sellers.json dashboard");
+    input.value = ""; msg.textContent = ""; msg.className = "msg";
+    dlg.showModal();
+    return new Promise(resolve => {
+      const onSubmit = async e => {
+        if (e.submitter && e.submitter.value === "cancel") return;   // let the dialog close
+        e.preventDefault();
+        const key = input.value.trim(); if (!key) return;
+        msg.className = "msg muted"; msg.textContent = "Checking the key…";
+        try {
+          const info = await gh("GET", `/repos/${repo}`, null, key);
+          if (!info.permissions || !info.permissions.push) {
+            msg.className = "msg err";
+            msg.textContent = "This key works, but your GitHub account isn't on the team yet. Ask the project owner to add you (Settings → Collaborators).";
+            return;
+          }
+          setKey(key); dlg.close("ok");
+        } catch (err) { msg.className = "msg err"; msg.textContent = "That key didn't work. Copy it again and paste the whole thing."; }
+      };
+      $("key-form").addEventListener("submit", onSubmit);
+      dlg.addEventListener("close", () => { $("key-form").removeEventListener("submit", onSubmit); resolve(!!getKey()); }, { once: true });
+    });
+  }
+
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  // wait until GitHub has published a newer version of this page, then reload it
+  async function reloadWhenUpdated() {
+    for (let i = 0; i < 60; i++) {
+      await sleep(10000);
+      try {
+        const html = await (await fetch(`./?t=${Date.now()}`, { cache: "no-store" })).text();
+        const m = html.match(/"generated":\s*"([^"]+)"/);
+        if (m && m[1] !== DATA.generated) return location.reload();
+      } catch {}
+    }
+  }
+
+  // add/remove: open a request on GitHub, wait for the robot's answer, show it here
+  async function partnerRequest(title, pending) {
+    const msg = $("add-msg");
+    if (!(await connect())) return;
+    msg.className = "msg muted"; msg.textContent = pending;
+    try {
+      const issue = await gh("POST", `/repos/${repo}/issues`, { title, body: "Requested from the dashboard." });
+      for (let i = 0; i < 60; i++) {
+        await sleep(8000);
+        const cur = await gh("GET", `/repos/${repo}/issues/${issue.number}`);
+        if (cur.state !== "closed") continue;
+        const comments = await gh("GET", `/repos/${repo}/issues/${issue.number}/comments`);
+        const text = (comments.length ? comments[comments.length - 1].body : "Done.").replace(/^[✅❌]\s*/u, "");
+        const ok = cur.state_reason !== "not_planned";
+        msg.className = ok ? "msg ok" : "msg err";
+        msg.textContent = ok ? text + " Updating the page…" : text;
+        if (ok) await reloadWhenUpdated();
+        return;
+      }
+      msg.textContent = "This is taking longer than usual. Refresh the page in a few minutes.";
+    } catch (err) { msg.className = "msg err"; msg.textContent = err.message; }
+  }
 
   // ---------- state ----------
   const today = iso(new Date());
@@ -343,8 +449,8 @@ button.link:hover { color: var(--critical); background: none; }
     if (rm) {
       e.stopPropagation();
       const d = rm.dataset.remove;
-      if (repo) return ghIssue(`Remove partner: ${d}`, "Click **Submit new issue** below. The partner is removed from the dashboard in about 2 minutes. Its past changes stay.");
       if (!confirm(`Stop watching ${d}?\n\nIts past changes stay on the dashboard.`)) return;
+      if (repo) return partnerRequest(`Remove partner: ${d}`, `Removing ${d}… this takes about 2 minutes.`);
       try { await api("DELETE", "/api/partners?domain=" + encodeURIComponent(d)); await load(); render(); }
       catch (err) { alert(err.message); }
       return;
@@ -361,10 +467,9 @@ button.link:hover { color: var(--critical); background: none; }
     const v = $("add-input").value.trim(); if (!v) return;
     const btn = $("add-btn"), msg = $("add-msg");
     if (repo) {
-      ghIssue(`Add partner: ${v}`, "Click **Submit new issue** below. The partner is checked and added in about 2 minutes, and you'll get a reply here.");
-      msg.className = "msg muted";
-      msg.textContent = "A GitHub page opened in a new tab: click “Submit new issue” there. Refresh this page in about 2 minutes.";
-      $("add-input").value = "";
+      btn.disabled = true;
+      await partnerRequest(`Add partner: ${v}`, `Checking ${v}/sellers.json and adding it… this takes about 2 minutes.`);
+      btn.disabled = false; $("add-input").value = "";
       return;
     }
     btn.disabled = true; btn.textContent = "Checking…";
@@ -382,8 +487,17 @@ button.link:hover { color: var(--critical); background: none; }
 
   // check now
   $("check-now").addEventListener("click", async () => {
-    if (repo) return window.open(`https://github.com/${repo}/actions/workflows/update.yml`, "_blank", "noopener");
-    const b = $("check-now"); b.disabled = true; b.textContent = "Checking…";
+    const b = $("check-now");
+    if (repo) {
+      if (!(await connect())) return;
+      b.disabled = true; b.textContent = "Checking… (about 2 min)";
+      try {
+        await gh("POST", `/repos/${repo}/actions/workflows/update.yml/dispatches`, { ref: "main" });
+        await reloadWhenUpdated();
+        b.textContent = "Still working… refresh in a few minutes";
+      } catch (err) { alert(err.message); b.textContent = "Check now"; b.disabled = false; }
+      return;
+    } b.disabled = true; b.textContent = "Checking…";
     try {
       const r = await api("POST", "/api/check");
       await load(); render();
