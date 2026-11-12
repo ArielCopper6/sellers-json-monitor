@@ -18,8 +18,9 @@ click **Submit new issue**. About 2 minutes later the dashboard is updated and G
 replies on that page. Only people added to the project on GitHub can change the list
 (Settings → Collaborators on github.com/ArielCopper6/sellers-json-monitor).
 
-## Check now
-Click "Check now (on GitHub)" on the dashboard, then **Run workflow**.
+## Extra check (rarely needed)
+On GitHub: Actions → Update dashboard → **Run workflow**. Extra checks are safe: each check
+is compared with the one before it, and a day's checks are added up.
 
 ## Files
 - `domains.txt` the partner list

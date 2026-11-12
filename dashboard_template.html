@@ -136,7 +136,6 @@ dialog .row { justify-content: flex-end; gap: 8px; }
     </div>
     <div class="row">
       <span class="sub" id="generated"></span>
-      <button id="check-now" class="server-only">Check all partners now</button>
       <button id="forget-key" class="link" hidden title="Remove the GitHub key saved in this browser">Disconnect</button>
     </div>
   </header>
@@ -258,7 +257,6 @@ dialog .row { justify-content: flex-end; gap: 8px; }
   const canManage = live || !!repo;
   document.querySelectorAll(".server-only").forEach(el => el.hidden = !canManage);
   $("static-note").hidden = canManage;
-  if (repo) $("check-now").textContent = "Check now";
 
   // ---------- GitHub key (team page only) ----------
   // A personal GitHub key, kept only in this browser, lets the buttons act on GitHub directly.
@@ -484,27 +482,6 @@ dialog .row { justify-content: flex-end; gap: 8px; }
     } catch (err) {
       msg.className = "msg err"; msg.textContent = err.message;
     } finally { btn.disabled = false; btn.textContent = "Add partner"; }
-  });
-
-  // check now
-  $("check-now").addEventListener("click", async () => {
-    const b = $("check-now");
-    if (repo) {
-      if (!(await connect())) return;
-      b.disabled = true; b.textContent = "Checking… (about 2 min)";
-      try {
-        await gh("POST", `/repos/${repo}/actions/workflows/update.yml/dispatches`, { ref: "main" });
-        await reloadWhenUpdated();
-        b.textContent = "Still working… refresh in a few minutes";
-      } catch (err) { alert(err.message); b.textContent = "Check now"; b.disabled = false; }
-      return;
-    } b.disabled = true; b.textContent = "Checking…";
-    try {
-      const r = await api("POST", "/api/check");
-      await load(); render();
-      b.textContent = r.errors.length ? `Done, ${r.errors.length} could not be read` : "Done ✓";
-    } catch (err) { alert(err.message); b.textContent = "Check all partners now"; }
-    finally { b.disabled = false; setTimeout(() => b.textContent = "Check all partners now", 4000); }
   });
 
   // ---------- chart ----------
