@@ -266,7 +266,7 @@ def read_jsonl(path):
 
 
 def dashboard_data():
-    return {"generated": dt.datetime.now().strftime("%Y-%m-%d %H:%M"), "domains": load_domains(),
+    return {"generated": dt.datetime.now(dt.timezone.utc).isoformat(timespec="minutes"), "domains": load_domains(),
             "runs": read_jsonl(RUNS_LOG), "changes": read_jsonl(CHANGES_LOG),
             # set on GitHub: lets the web page link to "add partner" / "check now"
             "repo": os.environ.get("GITHUB_REPOSITORY")}

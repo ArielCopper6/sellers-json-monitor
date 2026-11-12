@@ -292,7 +292,9 @@ button.link:hover { color: var(--critical); background: none; }
     const D = derive();
     if (state.partner && !D.partners.includes(state.partner)) state.partner = "";
     renderPresets();
-    $("generated").textContent = DATA.generated ? "Updated " + DATA.generated : "";
+    const gen = DATA.generated && new Date(DATA.generated);
+    $("generated").textContent = gen ? "Updated " + (isNaN(gen) ? DATA.generated
+      : gen.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })) : "";
     $("subtitle").textContent = D.watched.length
       ? `Watching ${D.watched.length} partner${D.watched.length > 1 ? "s" : ""}` + (canManage ? " · checked automatically every morning" : "")
       : "No partners yet. Add one below.";
