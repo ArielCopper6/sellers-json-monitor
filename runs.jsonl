@@ -12,3 +12,4 @@
 {"date": "2026-11-12", "exchange": "lijit.com", "since": "2026-11-12", "sellers": 7361, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
 {"date": "2026-11-12", "exchange": "playdigo.com", "since": "2026-11-12", "sellers": 131, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
 {"date": "2026-11-12", "exchange": "openx.com", "since": "2026-11-12", "sellers": 8061, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
+{"date": "2026-11-12", "exchange": "adipolo.com", "since": null, "sellers": 839, "new": 0, "removed": 0, "changed": 0, "baseline": true, "error": null}
