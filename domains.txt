@@ -1,0 +1,6 @@
+# One SSP / exchange domain per line. The script fetches https://<domain>/sellers.json
+rubiconproject.com
+pubmatic.com
+lijit.com
+playdigo.com
+openx.com

@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sellers.json Monitor</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f4f4f2;
+  --surface-1: #fcfcfb;
+  --border: #e2e1dc;
+  --grid: #ebeae6;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #77766f;
+  --series-1: #2a78d6;  /* new */
+  --series-2: #eb6834;  /* removed */
+  --series-3: #1baf7a;  /* changed */
+  --critical: #d03b3b;
+  --good: #0ca30c;
+  --accent: #2a78d6;
+  --accent-text: #ffffff;
+  --accent-soft: #e8f0fb;
+  --group-bg: #f1f0ec;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #111110; --surface-1: #1a1a19; --border: #2f2f2c; --grid: #262624;
+    --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #94938a;
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
+    --critical: #e66767; --good: #0ca30c; --accent: #3987e5; --accent-text: #ffffff;
+    --accent-soft: #1d2a3b; --group-bg: #222220;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111110; --surface-1: #1a1a19; --border: #2f2f2c; --grid: #262624;
+  --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #94938a;
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
+  --critical: #e66767; --good: #0ca30c; --accent: #3987e5; --accent-text: #ffffff;
+  --accent-soft: #1d2a3b; --group-bg: #222220;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0; background: var(--bg); color: var(--text-primary);
+  font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
+header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+h1 { font-size: 22px; margin: 0; }
+h2 { font-size: 15px; margin: 0 0 4px; }
+.muted { color: var(--text-muted); }
+.sub { color: var(--text-secondary); font-size: 13px; }
+.card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+.card-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 10px; margin-bottom: 12px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+.tile .label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary); }
+.tile .value { font-size: 30px; font-weight: 650; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.tile .note { font-size: 12px; color: var(--text-muted); }
+.swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: none; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { color: var(--text-secondary); font-weight: 600; white-space: nowrap; position: sticky; top: 0; background: var(--surface-1); z-index: 1; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+tr.clickable { cursor: pointer; }
+tr.clickable:hover td { background: var(--accent-soft); }
+tr.selected td { background: var(--accent-soft); }
+tr.group td { background: var(--group-bg); font-weight: 600; }
+tr.group .counts { font-weight: 400; color: var(--text-secondary); margin-left: 10px; }
+.badge { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.err { color: var(--critical); font-weight: 600; }
+.ok { color: var(--good); font-weight: 600; }
+select, input, button {
+  font: inherit; font-size: 13px; color: var(--text-primary); background: var(--surface-1);
+  border: 1px solid var(--border); border-radius: 7px; padding: 6px 10px; min-height: 34px;
+}
+button { cursor: pointer; white-space: nowrap; }
+button:hover:not(:disabled) { background: var(--accent-soft); }
+button:disabled { opacity: .55; cursor: default; }
+button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+button.primary:hover:not(:disabled) { filter: brightness(1.08); background: var(--accent); }
+button.link { border: none; background: none; color: var(--text-muted); padding: 4px 6px; min-height: 0; }
+button.link:hover { color: var(--critical); background: none; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border-radius: 999px; padding: 5px 12px; min-height: 30px; display: inline-flex; align-items: center; gap: 6px; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.chip[aria-pressed="true"] .swatch { outline: 1.5px solid var(--accent-text); }
+.chip .n { font-variant-numeric: tabular-nums; opacity: .8; }
+.timebar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.timebar .dates { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.addform { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.addform input { flex: 1 1 240px; max-width: 360px; }
+.msg { font-size: 13px; min-height: 18px; margin: -4px 0 10px; }
+.notice { background: var(--accent-soft); border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 16px; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--text-secondary); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+#chart { position: relative; }
+#chart svg { display: block; width: 100%; height: 240px; }
+#chart text { fill: var(--text-muted); font-size: 11px; }
+.tooltip {
+  position: absolute; pointer-events: none; background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: 0 4px 14px rgba(0,0,0,.12);
+  white-space: nowrap; display: none; z-index: 2;
+}
+.tooltip .r { display: flex; align-items: center; gap: 6px; }
+.tooltip .r b { margin-left: auto; padding-left: 12px; font-variant-numeric: tabular-nums; }
+.scroll { max-height: 620px; overflow: auto; }
+.empty { padding: 24px; text-align: center; color: var(--text-muted); }
+.filters2 { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 12px; align-items: center; }
+.filters2 input[type=search] { flex: 1 1 220px; max-width: 320px; }
+.filters2 .spacer { flex: 1; }
+.label-sm { font-size: 12px; color: var(--text-secondary); margin-right: 2px; }
+@media (max-width: 600px) { .tile .value { font-size: 24px; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Sellers.json Monitor</h1>
+      <div class="sub" id="subtitle">Loading…</div>
+    </div>
+    <div class="row">
+      <span class="sub" id="generated"></span>
+      <button id="check-now" class="server-only">Check all partners now</button>
+    </div>
+  </header>
+
+  <div class="notice" id="static-note" hidden>
+    This is a read-only copy. To add partners or check now, open
+    <a href="http://localhost:8765">http://localhost:8765</a>.
+  </div>
+
+  <!-- timeframe -->
+  <section class="card">
+    <div class="timebar">
+      <b>Timeframe</b>
+      <div class="chips" id="presets"></div>
+      <div class="dates">
+        <span class="label-sm">From</span><input type="date" id="from" aria-label="From date">
+        <span class="label-sm">to</span><input type="date" id="to" aria-label="To date">
+      </div>
+    </div>
+    <div class="sub" style="margin-top:8px">Each change is dated by the day the check found it.</div>
+  </section>
+
+  <div class="tiles" id="tiles"></div>
+
+  <!-- partners -->
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2>Partners</h2>
+        <div class="sub">Changes in the selected timeframe. Click a partner to see its changes below.</div>
+      </div>
+    </div>
+    <form class="addform server-only" id="add-form" autocomplete="off">
+      <input id="add-input" placeholder="Add a partner, e.g. openx.com" aria-label="Partner website">
+      <button class="primary" type="submit" id="add-btn">Add partner</button>
+    </form>
+    <div class="msg server-only" id="add-msg"></div>
+    <div class="table-wrap"><table id="partners"></table></div>
+  </section>
+
+  <!-- chart -->
+  <section class="card">
+    <div class="card-head">
+      <div><h2>Changes per check</h2><div class="sub" id="chart-sub"></div></div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div id="chart"><div class="tooltip" id="tip"></div></div>
+  </section>
+
+  <!-- changes -->
+  <section class="card" id="changes-card">
+    <h2>Changes by partner</h2>
+    <div class="sub" id="changes-sub"></div>
+    <div class="filters2"><span class="label-sm">Partner</span><div class="chips" id="partner-chips"></div></div>
+    <div class="filters2">
+      <span class="label-sm">Change</span><div class="chips" id="kind-chips"></div>
+      <select id="f-type" aria-label="Seller type"></select>
+      <input type="search" id="f-q" placeholder="Search name, domain or seller ID">
+      <span class="spacer"></span>
+      <button id="csv">Download CSV</button>
+    </div>
+    <div class="table-wrap scroll"><table id="changes"></table></div>
+  </section>
+</main>
+
+<script id="data" type="application/json">/*__DATA__*/null</script>
+<script>
+(async function () {
+  const $ = id => document.getElementById(id);
+  const esc = v => String(v ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const fmt = n => (n ?? 0).toLocaleString();
+  const fmtDate = d => d ? new Date(d + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "";
+  const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const KINDS = [
+    { key: "new", label: "New", color: "var(--series-1)" },
+    { key: "removed", label: "Removed", color: "var(--series-2)" },
+    { key: "changed", label: "Changed", color: "var(--series-3)" },
+  ];
+  const KIND = Object.fromEntries(KINDS.map(k => [k.key, k]));
+  const badge = k => `<span class="badge"><span class="swatch" style="background:${KIND[k].color}"></span>${KIND[k].label}</span>`;
+
+  // ---------- data ----------
+  const embedded = JSON.parse($("data").textContent);
+  const live = !embedded;
+  let DATA = embedded;
+  async function load() {
+    if (live) DATA = await (await fetch("/api/data", { cache: "no-store" })).json();
+  }
+  async function api(method, url, body) {
+    const r = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || "Something went wrong");
+    return j;
+  }
+  // on the GitHub website, adding/removing partners goes through a prefilled GitHub request
+  const repo = !live && DATA && DATA.repo;
+  const canManage = live || !!repo;
+  document.querySelectorAll(".server-only").forEach(el => el.hidden = !canManage);
+  $("static-note").hidden = canManage;
+  const ghIssue = (title, body) => window.open(`https://github.com/${repo}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`, "_blank", "noopener");
+  if (repo) $("check-now").textContent = "Check now (on GitHub)";
+
+  // ---------- state ----------
+  const today = iso(new Date());
+  const daysAgo = n => { const d = new Date(); d.setDate(d.getDate() - n); return iso(d); };
+  const PRESETS = [
+    { id: "yesterday", label: "Yesterday", from: () => daysAgo(1), to: () => daysAgo(1) },
+    { id: "7", label: "Last 7 days", from: () => daysAgo(6) },
+    { id: "30", label: "Last 30 days", from: () => daysAgo(29) },
+    { id: "90", label: "Last 90 days", from: () => daysAgo(89) },
+    { id: "all", label: "All time", from: () => "" },
+  ];
+  const state = { preset: "30", from: daysAgo(29), to: today, partner: "", kind: "", type: "", q: "" };
+
+  // ---------- timeframe ----------
+  function renderPresets() {
+    $("presets").innerHTML = PRESETS.map(p =>
+      `<button class="chip" data-p="${p.id}" aria-pressed="${state.preset === p.id}">${p.label}</button>`).join("");
+    $("from").value = state.from; $("to").value = state.to;
+  }
+  $("presets").addEventListener("click", e => {
+    const b = e.target.closest("[data-p]"); if (!b) return;
+    const p = PRESETS.find(x => x.id === b.dataset.p);
+    state.preset = p.id; state.from = p.from(); state.to = p.to ? p.to() : today;
+    render();
+  });
+  ["from", "to"].forEach(id => $(id).addEventListener("change", () => {
+    state.from = $("from").value; state.to = $("to").value; state.preset = "";
+    if (state.from && state.to && state.from > state.to) [state.from, state.to] = [state.to, state.from];
+    render();
+  }));
+  const inRange = d => (!state.from || d >= state.from) && (!state.to || d <= state.to);
+  const rangeText = () => state.from
+    ? (state.from === (state.to || today) ? fmtDate(state.from) : `${fmtDate(state.from)} – ${fmtDate(state.to || today)}`)
+    : `all time${state.to && state.to !== today ? " until " + fmtDate(state.to) : ""}`;
+
+  // ---------- derived ----------
+  function derive() {
+    const runs = DATA.runs || [], changes = DATA.changes || [];
+    const watched = DATA.domains && DATA.domains.length ? DATA.domains
+      : [...new Set(runs.map(r => r.exchange))];
+    // latest check per partner (several runs on one day add up)
+    const latest = {};
+    for (const r of runs) {
+      const p = latest[r.exchange];
+      latest[r.exchange] = p && p.date === r.date
+        ? { ...r, since: p.since ?? r.since, sellers: r.sellers ?? p.sellers }
+        : { ...r };
+    }
+    const rangeChanges = changes.filter(c => inRange(c.date));
+    const partners = [...new Set([...watched, ...rangeChanges.map(c => c.exchange)])].sort();
+    const counts = {};
+    for (const p of partners) counts[p] = { new: 0, removed: 0, changed: 0, total: 0 };
+    for (const c of rangeChanges) { counts[c.exchange][c.change]++; counts[c.exchange].total++; }
+    const firstCheck = {};
+    for (const r of runs) if (!firstCheck[r.exchange]) firstCheck[r.exchange] = r.date;
+    return { runs, watched, latest, rangeChanges, partners, counts, firstCheck };
+  }
+
+  // ---------- render ----------
+  function render() {
+    const D = derive();
+    if (state.partner && !D.partners.includes(state.partner)) state.partner = "";
+    renderPresets();
+    $("generated").textContent = DATA.generated ? "Updated " + DATA.generated : "";
+    $("subtitle").textContent = D.watched.length
+      ? `Watching ${D.watched.length} partner${D.watched.length > 1 ? "s" : ""}` + (canManage ? " · checked automatically every morning" : "")
+      : "No partners yet. Add one below.";
+    renderTiles(D); renderPartners(D); renderChart(D); renderChanges(D);
+  }
+
+  function renderTiles(D) {
+    const tot = k => D.rangeChanges.filter(c => c.change === k).length;
+    const sellers = D.watched.reduce((a, x) => a + (D.latest[x]?.sellers || 0), 0);
+    $("tiles").innerHTML = KINDS.map(k => `<div class="tile"><div class="label"><span class="swatch" style="background:${k.color}"></span>${k.label} sellers</div>
+      <div class="value">${fmt(tot(k.key))}</div><div class="note">${esc(rangeText())}</div></div>`).join("") +
+      `<div class="tile"><div class="label">Partners watched</div><div class="value">${fmt(D.watched.length)}</div>
+      <div class="note">${fmt(sellers)} sellers listed in total</div></div>`;
+  }
+
+  function renderPartners(D) {
+    const rows = D.partners.map(x => {
+      const r = D.latest[x], c = D.counts[x], watched = D.watched.includes(x);
+      const status = !watched ? `<span class="muted">No longer watched</span>`
+        : !r ? `<span class="muted">Not checked yet</span>`
+        : r.error ? `<span class="err" title="${esc(r.error)}">⚠ Could not read</span>`
+        : `<span class="ok">✓</span> OK`;
+      const since = D.firstCheck[x] && state.from && D.firstCheck[x] > state.from
+        ? `<div class="muted" style="font-size:12px">watched since ${fmtDate(D.firstCheck[x])}</div>` : "";
+      return `<tr class="clickable${state.partner === x ? " selected" : ""}" data-x="${esc(x)}">
+        <td><b>${esc(x)}</b>${since}</td><td class="num">${r?.sellers != null ? fmt(r.sellers) : "–"}</td>
+        <td class="num">${fmt(c.new)}</td><td class="num">${fmt(c.removed)}</td><td class="num">${fmt(c.changed)}</td>
+        <td>${r ? fmtDate(r.date) : "–"}</td><td>${status}</td>
+        <td style="text-align:right">${canManage && watched ? `<button class="link" data-remove="${esc(x)}" title="Stop watching ${esc(x)}">Remove</button>` : ""}</td></tr>`;
+    }).join("");
+    $("partners").innerHTML = `<tr><th>Partner</th><th class="num">Sellers now</th><th class="num">New</th><th class="num">Removed</th><th class="num">Changed</th><th>Last checked</th><th>Status</th><th></th></tr>` +
+      (rows || `<tr><td colspan="8" class="empty">No partners yet.</td></tr>`);
+  }
+  $("partners").addEventListener("click", async e => {
+    const rm = e.target.closest("[data-remove]");
+    if (rm) {
+      e.stopPropagation();
+      const d = rm.dataset.remove;
+      if (repo) return ghIssue(`Remove partner: ${d}`, "Click **Submit new issue** below. The partner is removed from the dashboard in about 2 minutes. Its past changes stay.");
+      if (!confirm(`Stop watching ${d}?\n\nIts past changes stay on the dashboard.`)) return;
+      try { await api("DELETE", "/api/partners?domain=" + encodeURIComponent(d)); await load(); render(); }
+      catch (err) { alert(err.message); }
+      return;
+    }
+    const tr = e.target.closest("tr[data-x]"); if (!tr) return;
+    state.partner = state.partner === tr.dataset.x ? "" : tr.dataset.x;
+    render();
+    $("changes-card").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  // add partner
+  $("add-form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const v = $("add-input").value.trim(); if (!v) return;
+    const btn = $("add-btn"), msg = $("add-msg");
+    if (repo) {
+      ghIssue(`Add partner: ${v}`, "Click **Submit new issue** below. The partner is checked and added in about 2 minutes, and you'll get a reply here.");
+      msg.className = "msg muted";
+      msg.textContent = "A GitHub page opened in a new tab: click “Submit new issue” there. Refresh this page in about 2 minutes.";
+      $("add-input").value = "";
+      return;
+    }
+    btn.disabled = true; btn.textContent = "Checking…";
+    msg.className = "msg muted"; msg.textContent = `Reading ${v}/sellers.json…`;
+    try {
+      const r = await api("POST", "/api/partners", { domain: v });
+      msg.className = "msg ok";
+      msg.textContent = `Added ${r.domain} with ${fmt(r.sellers)} sellers. Changes will show from the next check.`;
+      $("add-input").value = "";
+      await load(); render();
+    } catch (err) {
+      msg.className = "msg err"; msg.textContent = err.message;
+    } finally { btn.disabled = false; btn.textContent = "Add partner"; }
+  });
+
+  // check now
+  $("check-now").addEventListener("click", async () => {
+    if (repo) return window.open(`https://github.com/${repo}/actions/workflows/update.yml`, "_blank", "noopener");
+    const b = $("check-now"); b.disabled = true; b.textContent = "Checking…";
+    try {
+      const r = await api("POST", "/api/check");
+      await load(); render();
+      b.textContent = r.errors.length ? `Done, ${r.errors.length} could not be read` : "Done ✓";
+    } catch (err) { alert(err.message); b.textContent = "Check all partners now"; }
+    finally { b.disabled = false; setTimeout(() => b.textContent = "Check all partners now", 4000); }
+  });
+
+  // ---------- chart ----------
+  $("legend").innerHTML = KINDS.map(k => `<span><span class="swatch" style="background:${k.color}"></span>${k.label}</span>`).join("");
+  let lastD = null;
+  function renderChart(D) {
+    lastD = D;
+    const rs = D.runs.filter(r => inRange(r.date) && (!state.partner || r.exchange === state.partner));
+    const days = [...new Set(rs.map(r => r.date))].sort();
+    const per = days.map(d => {
+      const o = { date: d };
+      KINDS.forEach(k => o[k.key] = rs.filter(r => r.date === d).reduce((a, r) => a + (r[k.key] || 0), 0));
+      return o;
+    });
+    $("chart-sub").textContent = `${state.partner || "All partners"} · ${rangeText()}`;
+    const el = $("chart");
+    el.querySelector("svg, .empty")?.remove();
+    if (!per.length) { el.insertAdjacentHTML("beforeend", `<div class="empty">No checks in this timeframe.</div>`); return; }
+    const W = Math.max(el.clientWidth, 320), H = 240, m = { t: 12, r: 8, b: 26, l: 40 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const max = Math.max(1, ...per.flatMap(p => KINDS.map(k => p[k.key])));
+    const step = niceStep(max), top = Math.ceil(max / step) * step;
+    const y = v => m.t + ih - (v / top) * ih;
+    const band = iw / per.length;
+    const gap = 2, bw = Math.max(3, Math.min(18, (band * 0.7 - gap * 2) / 3));
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="New, removed and changed sellers per check">`;
+    for (let v = 0; v <= top; v += step) {
+      s += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)"/>`;
+      s += `<text x="${m.l - 6}" y="${y(v) + 4}" text-anchor="end">${fmt(v)}</text>`;
+    }
+    const every = Math.ceil(per.length / Math.max(1, Math.floor(iw / 70)));
+    per.forEach((p, i) => {
+      const cx = m.l + band * i + band / 2, gx = cx - (bw * 3 + gap * 2) / 2;
+      KINDS.forEach((k, j) => {
+        const v = p[k.key]; if (!v) return;
+        const bx = gx + j * (bw + gap), by = y(v), h = m.t + ih - by, r = Math.min(4, bw / 2, h);
+        s += `<path d="M${bx},${m.t + ih} V${by + r} Q${bx},${by} ${bx + r},${by} H${bx + bw - r} Q${bx + bw},${by} ${bx + bw},${by + r} V${m.t + ih} Z" fill="${k.color}"/>`;
+      });
+      if (i % every === 0) s += `<text x="${cx}" y="${H - 8}" text-anchor="middle">${esc(new Date(p.date + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" }))}</text>`;
+      s += `<rect x="${m.l + band * i}" y="${m.t}" width="${band}" height="${ih}" fill="transparent" data-i="${i}" style="cursor:pointer"/>`;
+    });
+    s += `<line x1="${m.l}" x2="${W - m.r}" y1="${m.t + ih}" y2="${m.t + ih}" stroke="var(--border)"/></svg>`;
+    el.insertAdjacentHTML("beforeend", s);
+    const tip = $("tip");
+    el.querySelectorAll("rect[data-i]").forEach(rc => {
+      rc.addEventListener("mousemove", e => {
+        const p = per[+rc.dataset.i];
+        tip.innerHTML = `<div style="margin-bottom:4px"><b>${fmtDate(p.date)}</b></div>` +
+          KINDS.map(k => `<div class="r"><span class="swatch" style="background:${k.color}"></span>${k.label}<b>${fmt(p[k.key])}</b></div>`).join("") +
+          `<div class="muted" style="margin-top:4px">Click to show only this day</div>`;
+        tip.style.display = "block";
+        const b = el.getBoundingClientRect();
+        let left = e.clientX - b.left + 12;
+        if (left + tip.offsetWidth > b.width) left = e.clientX - b.left - tip.offsetWidth - 12;
+        tip.style.left = left + "px"; tip.style.top = (e.clientY - b.top - 10) + "px";
+      });
+      rc.addEventListener("mouseleave", () => tip.style.display = "none");
+      rc.addEventListener("click", () => {
+        const d = per[+rc.dataset.i].date;
+        state.from = d; state.to = d; state.preset = ""; render();
+      });
+    });
+  }
+  function niceStep(max) {
+    const raw = max / 4, p = Math.pow(10, Math.floor(Math.log10(raw)));
+    return [1, 2, 5, 10].map(f => f * p).find(s => s >= raw) || p * 10;
+  }
+  window.addEventListener("resize", () => lastD && renderChart(lastD));
+
+  // ---------- changes by partner ----------
+  let shownRows = [];
+  function renderChanges(D) {
+    $("changes-sub").textContent = rangeText();
+    const base = D.rangeChanges;
+    // partner chips
+    $("partner-chips").innerHTML =
+      `<button class="chip" data-partner="" aria-pressed="${!state.partner}">All partners <span class="n">${fmt(base.length)}</span></button>` +
+      D.partners.map(x => `<button class="chip" data-partner="${esc(x)}" aria-pressed="${state.partner === x}">${esc(x)} <span class="n">${fmt(D.counts[x].total)}</span></button>`).join("");
+    const byPartner = base.filter(c => !state.partner || c.exchange === state.partner);
+    // kind chips
+    $("kind-chips").innerHTML =
+      `<button class="chip" data-kind="" aria-pressed="${!state.kind}">All <span class="n">${fmt(byPartner.length)}</span></button>` +
+      KINDS.map(k => `<button class="chip" data-kind="${k.key}" aria-pressed="${state.kind === k.key}"><span class="swatch" style="background:${k.color}"></span>${k.label} <span class="n">${fmt(byPartner.filter(c => c.change === k.key).length)}</span></button>`).join("");
+    // seller type select
+    const types = [...new Set(byPartner.map(c => c.seller_type).filter(Boolean))].sort();
+    if (state.type && !types.includes(state.type)) state.type = "";
+    $("f-type").innerHTML = `<option value="">All seller types</option>` + types.map(t => `<option ${t === state.type ? "selected" : ""}>${esc(t)}</option>`).join("");
+
+    const q = state.q.toLowerCase();
+    const order = { new: 0, removed: 1, changed: 2 };
+    const rows = byPartner.filter(c => (!state.kind || c.change === state.kind) && (!state.type || c.seller_type === state.type) &&
+      (!q || [c.name, c.seller_domain, c.seller_id].some(v => String(v ?? "").toLowerCase().includes(q))))
+      .sort((a, b) => a.exchange.localeCompare(b.exchange) || order[a.change] - order[b.change] ||
+        b.date.localeCompare(a.date) || String(a.name ?? "").localeCompare(String(b.name ?? "")));
+    shownRows = rows;
+
+    const head = `<tr><th>Date found</th><th>Change</th><th>Seller ID</th><th>Name</th><th>Seller domain</th><th>Seller type</th><th>What changed</th></tr>`;
+    if (!rows.length) {
+      $("changes").innerHTML = head + `<tr><td colspan="7" class="empty">${base.length ? "No changes match these filters." : "No changes in this timeframe. Try a longer one, like “All time”."}</td></tr>`;
+      return;
+    }
+    let html = head, cur = null, n = 0;
+    for (const c of rows) {
+      if (c.exchange !== cur) {
+        cur = c.exchange;
+        const g = rows.filter(r => r.exchange === cur);
+        html += `<tr class="group"><td colspan="7">${esc(cur)}<span class="counts">${KINDS.map(k => `${fmt(g.filter(r => r.change === k.key).length)} ${k.label.toLowerCase()}`).join(" · ")}</span></td></tr>`;
+      }
+      if (++n > 3000) { html += `<tr><td colspan="7" class="empty">Showing the first 3,000. Narrow the filters or Download CSV to see all.</td></tr>`; break; }
+      html += `<tr><td style="white-space:nowrap">${fmtDate(c.date)}</td><td>${badge(c.change)}</td><td>${esc(c.seller_id)}</td>
+        <td>${esc(c.name)}</td><td>${esc(c.seller_domain)}</td><td>${esc(c.seller_type)}</td><td class="muted">${esc(c.detail)}</td></tr>`;
+    }
+    $("changes").innerHTML = html;
+  }
+  $("partner-chips").addEventListener("click", e => { const b = e.target.closest("[data-partner]"); if (b) { state.partner = b.dataset.partner; render(); } });
+  $("kind-chips").addEventListener("click", e => { const b = e.target.closest("[data-kind]"); if (b) { state.kind = b.dataset.kind; render(); } });
+  $("f-type").addEventListener("change", e => { state.type = e.target.value; render(); });
+  $("f-q").addEventListener("input", e => { state.q = e.target.value.trim(); render(); });
+  $("csv").addEventListener("click", () => {
+    const cols = ["date", "exchange", "change", "seller_id", "name", "seller_domain", "seller_type", "detail"];
+    const head = ["date_found", "partner", "change", "seller_id", "name", "seller_domain", "seller_type", "what_changed"];
+    const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const csv = [head.join(",")].concat(shownRows.map(r => cols.map(c => q(r[c])).join(","))).join("\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    a.download = `sellers-json-changes_${state.partner || "all-partners"}_${state.from || "start"}_to_${state.to || today}.csv`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+
+  await load();
+  render();
+})();
+</script>
+</body>
+</html>

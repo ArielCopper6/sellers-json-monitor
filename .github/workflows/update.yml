@@ -1,0 +1,79 @@
+name: Update dashboard
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # every day 06:00 UTC = 08:00 Israel time in winter, 09:00 in summer
+  workflow_dispatch:       # "Run workflow" button = check now
+  issues:
+    types: [opened]        # "Add partner: x" / "Remove partner: x" requests from the dashboard
+
+permissions:
+  contents: write
+  issues: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    if: >-
+      github.event_name != 'issues' ||
+      startsWith(github.event.issue.title, 'Add partner:') ||
+      startsWith(github.event.issue.title, 'Remove partner:')
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Add or remove a partner
+        if: github.event_name == 'issues'
+        env:
+          TITLE: ${{ github.event.issue.title }}
+          WHO: ${{ github.event.issue.author_association }}
+          ISSUE: ${{ github.event.issue.number }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "$WHO" != OWNER && "$WHO" != MEMBER && "$WHO" != COLLABORATOR ]]; then
+            gh issue close "$ISSUE" --reason "not planned" --comment "Only people added to this project can change the partner list."
+            exit 0
+          fi
+          ACTION="${TITLE%%:*}"
+          DOMAIN="${TITLE#*:}"
+          if [[ "$ACTION" == "Add partner" ]]; then FLAG=--add; else FLAG=--remove; fi
+          if OUT=$(python sellers_monitor.py "$FLAG" "$DOMAIN" 2>&1); then
+            gh issue close "$ISSUE" --comment "✅ $OUT"
+          else
+            gh issue close "$ISSUE" --reason "not planned" --comment "❌ $OUT"
+          fi
+
+      - name: Daily check
+        if: github.event_name != 'issues'
+        run: python sellers_monitor.py --no-email
+
+      - name: Save results
+        run: |
+          git config user.name "sellers-json-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add domains.txt state changes.jsonl runs.jsonl
+          git diff --cached --quiet || git commit -m "Update sellers.json data $(date -u +%F)"
+          git push
+
+      - name: Build web page
+        run: |
+          mkdir -p site
+          python sellers_monitor.py --dashboard --dashboard-out site/index.html
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4

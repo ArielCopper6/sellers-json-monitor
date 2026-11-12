@@ -1,0 +1,11 @@
+# private: your email password
+config.env
+# large or generated files (kept only on your Mac)
+history/
+reports/
+site/
+dashboard.html
+*.log
+__pycache__/
+.claude/
+.DS_Store
