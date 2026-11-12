@@ -61,3 +61,4 @@
 {"date": "2026-11-12", "exchange": "adipolo.com", "since": "2026-11-12", "sellers": 840, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
 {"date": "2026-11-12", "exchange": "themediagrid.com", "since": "2026-11-12", "sellers": 1699, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
 {"date": "2026-11-12", "exchange": "apester.com", "since": "2026-11-12", "sellers": 403, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
+{"date": "2026-11-12", "exchange": "tredio.io", "since": null, "sellers": 56, "new": 0, "removed": 0, "changed": 0, "baseline": true, "error": null}
