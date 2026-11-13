@@ -104,3 +104,4 @@
 {"date": "2026-11-13", "exchange": "triplelift.com", "since": "2026-11-12", "sellers": 8001, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
 {"date": "2026-11-13", "exchange": "programmaticx.ai", "since": null, "sellers": 202, "new": 0, "removed": 0, "changed": 0, "baseline": true, "error": null}
 {"date": "2026-11-13", "exchange": "selectmedia.asia", "since": null, "sellers": 86, "new": 0, "removed": 0, "changed": 0, "baseline": true, "error": null}
+{"date": "2026-11-13", "exchange": "app-stock.com", "since": null, "sellers": 58, "new": 0, "removed": 0, "changed": 0, "baseline": true, "error": null}
