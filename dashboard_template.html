@@ -350,7 +350,7 @@ dialog .row { justify-content: flex-end; gap: 8px; }
     { id: "90", label: "Last 90 days", from: () => daysAgo(89) },
     { id: "all", label: "All time", from: () => "" },
   ];
-  const state = { preset: "30", from: daysAgo(29), to: today, partner: "", kind: "", type: "", q: "" };
+  const state = { preset: "yesterday", from: daysAgo(1), to: daysAgo(1), partner: "", kind: "", type: "", q: "" };
 
   // ---------- timeframe ----------
   // the same timeframe controls appear at the top and above the changes table; they stay in sync
