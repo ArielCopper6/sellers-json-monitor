@@ -105,3 +105,16 @@
 {"date": "2026-11-13", "exchange": "programmaticx.ai", "since": null, "sellers": 202, "new": 0, "removed": 0, "changed": 0, "baseline": true, "error": null}
 {"date": "2026-11-13", "exchange": "selectmedia.asia", "since": null, "sellers": 86, "new": 0, "removed": 0, "changed": 0, "baseline": true, "error": null}
 {"date": "2026-11-13", "exchange": "app-stock.com", "since": null, "sellers": 58, "new": 0, "removed": 0, "changed": 0, "baseline": true, "error": null}
+{"date": "2026-11-14", "exchange": "rubiconproject.com", "since": "2026-11-13", "sellers": 3253, "new": 33, "removed": 4, "changed": 0, "baseline": false, "error": null}
+{"date": "2026-11-14", "exchange": "pubmatic.com", "since": "2026-11-13", "sellers": 6528, "new": 0, "removed": 0, "changed": 1, "baseline": false, "error": null}
+{"date": "2026-11-14", "exchange": "lijit.com", "since": "2026-11-13", "sellers": 7362, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
+{"date": "2026-11-14", "exchange": "playdigo.com", "since": "2026-11-13", "sellers": 132, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
+{"date": "2026-11-14", "exchange": "openx.com", "since": "2026-11-13", "sellers": 8064, "new": 8, "removed": 1, "changed": 0, "baseline": false, "error": null}
+{"date": "2026-11-14", "exchange": "adipolo.com", "since": "2026-11-13", "sellers": 840, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
+{"date": "2026-11-14", "exchange": "themediagrid.com", "since": "2026-11-13", "sellers": 1699, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
+{"date": "2026-11-14", "exchange": "apester.com", "since": "2026-11-13", "sellers": 403, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
+{"date": "2026-11-14", "exchange": "tredio.io", "since": "2026-11-13", "sellers": 56, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
+{"date": "2026-11-14", "exchange": "triplelift.com", "since": "2026-11-13", "sellers": 8001, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
+{"date": "2026-11-14", "exchange": "programmaticx.ai", "since": "2026-11-13", "sellers": 202, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
+{"date": "2026-11-14", "exchange": "selectmedia.asia", "since": "2026-11-13", "sellers": 86, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
+{"date": "2026-11-14", "exchange": "app-stock.com", "since": "2026-11-13", "sellers": 58, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
