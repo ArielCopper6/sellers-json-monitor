@@ -16,3 +16,4 @@ media.net
 video.unrulymedia.com
 xandr.com
 consumable.com
+inmobi.com
