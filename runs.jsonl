@@ -146,3 +146,4 @@
 {"date": "2026-11-15", "exchange": "selectmedia.asia", "since": "2026-11-14", "sellers": 86, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
 {"date": "2026-11-15", "exchange": "app-stock.com", "since": "2026-11-14", "sellers": 58, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
 {"date": "2026-11-15", "exchange": "media.net", "since": "2026-11-14", "sellers": 2846, "new": 0, "removed": 1, "changed": 9, "baseline": false, "error": null}
+{"date": "2026-11-15", "exchange": "video.unrulymedia.com", "since": null, "sellers": 1594, "new": 0, "removed": 0, "changed": 0, "baseline": true, "error": null}
