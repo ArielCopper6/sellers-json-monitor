@@ -188,3 +188,4 @@
 {"date": "2026-11-16", "exchange": "inmobi.com", "since": "2026-11-16", "sellers": 3239, "new": 0, "removed": 0, "changed": 0, "baseline": false, "error": null}
 {"date": "2026-11-16", "exchange": "richaudience.com", "since": null, "sellers": 1410, "new": 0, "removed": 0, "changed": 0, "baseline": true, "error": null}
 {"date": "2026-11-16", "exchange": "copper6.com", "since": null, "sellers": 743, "new": 0, "removed": 0, "changed": 0, "baseline": true, "error": null}
+{"date": "2026-11-16", "exchange": "carliba.io", "since": null, "sellers": 159, "new": 0, "removed": 0, "changed": 0, "baseline": true, "error": null}
