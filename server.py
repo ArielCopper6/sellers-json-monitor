@@ -56,7 +56,7 @@ class Handler(BaseHTTPRequestHandler):
         if not self._same_origin():
             return self._send(403, {"error": "forbidden"})
         path = urlparse(self.path).path
-        today = dt.date.today().isoformat()
+        today = m.utc_today()
         if path == "/api/partners":
             domain = m.normalize_domain(str(self._json_body().get("domain", "")))
             if not domain:

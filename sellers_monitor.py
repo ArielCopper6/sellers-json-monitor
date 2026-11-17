@@ -349,6 +349,11 @@ def check_domains(domains, run_date, save=True):
     return results
 
 
+def utc_today():
+    """All dates are UTC days, so everyone sees the same \"yesterday\"."""
+    return dt.datetime.now(dt.timezone.utc).date().isoformat()
+
+
 def manage_partner(add, remove):
     """Used by the GitHub "Add partner" / "Remove partner" requests. Exits non-zero with a message on failure."""
     domain = normalize_domain(add or remove)
@@ -369,7 +374,7 @@ def manage_partner(add, remove):
         reason = "the file doesn't exist there" if "404" in str(e) else f"{type(e).__name__}: {e}"
         sys.exit(f"Couldn't read https://{domain}/sellers.json ({reason}). Check the spelling.")
     add_domain(domain)
-    res = check_domains([domain], dt.date.today().isoformat())[0]
+    res = check_domains([domain], utc_today())[0]
     print(f"Added {domain} with {res.get('count')} sellers. Changes will show from the next daily check.")
 
 
@@ -384,6 +389,7 @@ def main():
     ap.add_argument("--add", metavar="DOMAIN", help="add a partner and save its first list")
     ap.add_argument("--remove", metavar="DOMAIN", help="stop watching a partner")
     ap.add_argument("--domains", default=str(BASE / "domains.txt"))
+    ap.add_argument("--date", help="UTC day to file the changes under (default: today, UTC)")
     args = ap.parse_args()
     if args.add or args.remove:
         return manage_partner(args.add, args.remove)
@@ -393,7 +399,7 @@ def main():
         return
 
     load_env(BASE / "config.env")
-    run_date = dt.date.today().isoformat()
+    run_date = args.date or utc_today()
     results = check_domains(load_domains(Path(args.domains)), run_date, save=not args.dry_run)
 
     subject, html_body, text_body = build_report(results, run_date)

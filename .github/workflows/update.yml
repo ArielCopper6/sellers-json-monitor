@@ -2,7 +2,7 @@ name: Update dashboard
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # every day 06:00 UTC = 08:00 Israel time in winter, 09:00 in summer
+    - cron: "5 0 * * *"   # just after midnight UTC (02:05 Israel time in winter, 03:05 in summer)
   workflow_dispatch:       # "Run workflow" button = check now
   issues:
     types: [opened]        # "Add partner: x" / "Remove partner: x" requests from the dashboard
@@ -56,7 +56,10 @@ jobs:
 
       - name: Daily check
         if: github.event_name != 'issues'
-        run: python sellers_monitor.py --no-email
+        run: |
+          # the nightly check closes the UTC day that just ended, so its changes are filed under that day
+          if [[ "${{ github.event_name }}" == schedule ]]; then DAY=$(date -u -d yesterday +%F); else DAY=$(date -u +%F); fi
+          python sellers_monitor.py --no-email --date "$DAY"
 
       - name: Save results
         run: |

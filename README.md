@@ -2,9 +2,11 @@
 
 **Dashboard (share this link with your team):** https://arielcopper6.github.io/sellers-json-monitor/
 
-Every morning (08:00 Israel time in winter, 09:00 in summer) GitHub checks
+Every night just after midnight UTC (about 02:05 Israel time in winter) GitHub checks
 `https://<partner>/sellers.json` for every partner in `domains.txt`, compares it with the
 previous check, and records which sellers are **new**, **removed** or **changed**.
+All days are UTC days: the nightly check files its changes under the UTC day that just ended,
+so "Yesterday" on the dashboard is the full UTC day.
 It runs on GitHub, so your Mac can be off.
 
 ## Using the dashboard

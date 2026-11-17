@@ -171,7 +171,7 @@ dialog .row { justify-content: flex-end; gap: 8px; }
         <span class="label-sm">to</span><input type="date" class="to" aria-label="To date">
       </div>
     </div>
-    <div class="sub" style="margin-top:8px">Each change is dated by the day the check found it.</div>
+    <div class="sub" style="margin-top:8px">Days are in UTC. Each night just after midnight UTC, the check closes the day, so “Yesterday” is the full UTC day.</div>
   </section>
 
   <div class="tiles" id="tiles"></div>
@@ -230,7 +230,7 @@ dialog .row { justify-content: flex-end; gap: 8px; }
   const esc = v => String(v ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const fmt = n => (n ?? 0).toLocaleString();
   const fmtDate = d => d ? new Date(d + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "";
-  const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const iso = d => d.toISOString().slice(0, 10);   // dates are UTC days
   const KINDS = [
     { key: "new", label: "New", color: "var(--series-1)" },
     { key: "removed", label: "Removed", color: "var(--series-2)" },
@@ -342,7 +342,7 @@ dialog .row { justify-content: flex-end; gap: 8px; }
 
   // ---------- state ----------
   const today = iso(new Date());
-  const daysAgo = n => { const d = new Date(); d.setDate(d.getDate() - n); return iso(d); };
+  const daysAgo = n => { const d = new Date(); d.setUTCDate(d.getUTCDate() - n); return iso(d); };
   const PRESETS = [
     { id: "yesterday", label: "Yesterday", from: () => daysAgo(1), to: () => daysAgo(1) },
     { id: "7", label: "Last 7 days", from: () => daysAgo(6) },
