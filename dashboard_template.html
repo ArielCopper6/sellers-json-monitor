@@ -572,7 +572,7 @@ dialog .row { justify-content: flex-end; gap: 8px; }
     const q = state.q.toLowerCase();
     const order = { new: 0, removed: 1, changed: 2 };
     const rows = byPartner.filter(c => (!state.kind || c.change === state.kind) && (!state.type || c.seller_type === state.type) &&
-      (!q || [c.name, c.seller_domain, c.seller_id].some(v => String(v ?? "").toLowerCase().includes(q))))
+      (!q || [c.name, c.seller_domain, c.seller_id, c.detail].some(v => String(v ?? "").toLowerCase().includes(q))))
       .sort((a, b) => a.exchange.localeCompare(b.exchange) || order[a.change] - order[b.change] ||
         b.date.localeCompare(a.date) || String(a.name ?? "").localeCompare(String(b.name ?? "")));
     shownRows = rows;

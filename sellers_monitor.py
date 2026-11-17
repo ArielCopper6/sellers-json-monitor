@@ -138,7 +138,8 @@ def diff(old, new):
         deltas = {f: (old[k].get(f), new[k].get(f)) for f in TRACKED_FIELDS
                   if old[k].get(f) != new[k].get(f)}
         if deltas:
-            changed.append({"seller_id": k, "name": new[k].get("name"), "changes": deltas})
+            changed.append({"seller_id": k, "name": new[k].get("name"), "domain": new[k].get("domain"),
+                            "seller_type": new[k].get("seller_type"), "changes": deltas})
     key = lambda r: (str(r.get("name") or "").lower(), r["seller_id"])
     return sorted(added, key=key), sorted(removed, key=key), sorted(changed, key=key)
 
