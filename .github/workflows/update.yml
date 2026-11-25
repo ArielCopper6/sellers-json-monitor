@@ -8,6 +8,7 @@ on:
     types: [opened]        # "Add partner: x" / "Remove partner: x" requests from the dashboard
 
 permissions:
+  actions: read          # lets the publish step find the built page
   contents: write
   issues: write
   pages: write
