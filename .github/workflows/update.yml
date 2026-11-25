@@ -79,5 +79,7 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: site
+      - name: Give GitHub a moment to register the upload
+        run: sleep 30
       - id: deploy
         uses: actions/deploy-pages@v5
